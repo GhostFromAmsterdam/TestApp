@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="VIBE VAULT">
+    <meta name="theme-color" content="#020205">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect fill='%23020205' width='180' height='180' rx='40'/%3E%3Ctext x='90' y='115' font-size='90' text-anchor='middle'%3E%F0%9F%94%AE%3C/text%3E%3C/svg%3E">
     <title>VIBE VAULT</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -40,6 +45,7 @@
             color: var(--text-primary);
             min-height: 100vh;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
         body {
@@ -521,7 +527,26 @@
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
+        }
+
+        .summary-preview {
+            font-size: 12px;
+            color: var(--neon-cyan);
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            border-radius: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .summary-preview:empty {
+            display: none;
         }
 
         .card-actions {
@@ -560,6 +585,35 @@
             border-color: var(--neon-green);
             color: var(--neon-green);
             box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+        }
+
+        .summary-btn {
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border-subtle);
+            background: rgba(255, 0, 255, 0.05);
+            color: var(--neon-pink);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .summary-btn:active {
+            transform: scale(0.95);
+        }
+
+        .summary-btn:hover {
+            background: rgba(255, 0, 255, 0.1);
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.2);
+        }
+
+        .summary-btn.has-summary {
+            background: rgba(0, 255, 136, 0.1);
+            border-color: var(--neon-green);
+            color: var(--neon-green);
         }
 
         .delete-btn {
@@ -757,6 +811,10 @@
             resize: vertical;
         }
 
+        .form-textarea.large {
+            min-height: 150px;
+        }
+
         .form-select {
             cursor: pointer;
             appearance: none;
@@ -835,17 +893,6 @@
             transform: translateY(0);
         }
 
-        /* Confetti Canvas */
-        #confetti-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 400;
-        }
-
         /* Import/Export buttons */
         .data-actions {
             display: flex;
@@ -886,6 +933,38 @@
         #import-input {
             display: none;
         }
+
+        /* Share Target Modal */
+        .share-banner {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.1) 0%, rgba(255, 0, 255, 0.1) 100%);
+            border: 1px solid var(--border-glow);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .share-banner.active {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .share-banner h3 {
+            font-size: 14px;
+            color: var(--neon-cyan);
+            margin-bottom: 8px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .share-banner p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
     </style>
 </head>
 <body>
@@ -902,6 +981,12 @@
     </header>
 
     <div class="container">
+        <!-- Share Target Banner -->
+        <div class="share-banner" id="share-banner">
+            <h3>🔗 Shared Link Detected</h3>
+            <p>Review and save this link to your vault</p>
+        </div>
+
         <!-- Dashboard -->
         <div class="dashboard">
             <div class="widget widget-to-watch">
@@ -950,7 +1035,7 @@
     <div class="modal-overlay" id="modal-overlay" onclick="closeModalOnOverlay(event)">
         <div class="modal" onclick="event.stopPropagation()">
             <div class="modal-header">
-                <h2 class="modal-title">Add New Link</h2>
+                <h2 class="modal-title" id="modal-title">Add New Link</h2>
                 <button class="modal-close" onclick="closeModal()">
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M18 6L6 18M6 6L18 18" stroke-linecap="round" stroke-linejoin="round"/>
@@ -958,6 +1043,7 @@
                 </button>
             </div>
             <form id="add-link-form" onsubmit="saveLink(event)">
+                <input type="hidden" id="link-id">
                 <div class="form-group">
                     <label class="form-label">URL</label>
                     <input type="url" class="form-input" id="link-url" placeholder="https://..." required>
@@ -987,9 +1073,48 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Notes</label>
-                    <textarea class="form-textarea" id="link-notes" placeholder="Add your thoughts..."></textarea>
+                    <textarea class="form-textarea" id="link-notes" placeholder="Quick notes..."></textarea>
                 </div>
-                <button type="submit" class="submit-btn">Save Link</button>
+                <div class="form-group">
+                    <label class="form-label">Summary / Key Points</label>
+                    <textarea class="form-textarea large" id="link-summary" placeholder="Write your summary, key takeaways, or verslag here...
+
+• Main point 1
+• Main point 2
+• Main point 3"></textarea>
+                </div>
+                <button type="submit" class="submit-btn" id="submit-btn">Save Link</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Summary Modal -->
+    <div class="modal-overlay" id="summary-modal-overlay" onclick="closeSummaryModalOnOverlay(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 class="modal-title">Edit Summary</h2>
+                <button class="modal-close" onclick="closeSummaryModal()">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 6L6 18M6 6L18 18" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="summary-form" onsubmit="saveSummary(event)">
+                <input type="hidden" id="summary-link-id">
+                <div class="form-group">
+                    <label class="form-label" id="summary-link-title">Link Title</label>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Your Summary / Verslag</label>
+                    <textarea class="form-textarea large" id="edit-summary-text" placeholder="Write your summary, key takeaways, or verslag here...
+
+• Main point 1
+• Main point 2
+• Main point 3
+
+What did you learn? What are the key insights?" required></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Save Summary</button>
             </form>
         </div>
     </div>
@@ -1003,10 +1128,12 @@
         let links = [];
         let currentFilter = 'all';
         let focusMode = false;
+        let editingId = null;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             loadLinks();
+            checkSharedData();
             renderLinks();
             updateDashboard();
         });
@@ -1022,6 +1149,28 @@
             localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
             renderLinks();
             updateDashboard();
+        }
+
+        // Check for shared data (from Web Share Target API)
+        function checkSharedData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sharedUrl = urlParams.get('url') || urlParams.get('text') || urlParams.get('title');
+            
+            if (sharedUrl) {
+                // Extract URL from shared text if needed
+                const urlMatch = sharedUrl.match(/https?:\/\/[^\s]+/);
+                const cleanUrl = urlMatch ? urlMatch[0] : sharedUrl;
+                
+                if (cleanUrl && cleanUrl.startsWith('http')) {
+                    document.getElementById('share-banner').classList.add('active');
+                    openModal(cleanUrl);
+                    
+                    // Clean URL after processing
+                    if (window.history.replaceState) {
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }
+                }
+            }
         }
 
         // Dashboard
@@ -1067,14 +1216,62 @@
         }
 
         // Modal
-        function openModal() {
+        function openModal(sharedUrl = null, editId = null) {
+            editingId = editId;
+            const modalTitle = document.getElementById('modal-title');
+            const submitBtn = document.getElementById('submit-btn');
+            
+            if (editId) {
+                const link = links.find(l => l.id === editId);
+                if (link) {
+                    modalTitle.textContent = 'Edit Link';
+                    submitBtn.textContent = 'Update Link';
+                    document.getElementById('link-id').value = link.id;
+                    document.getElementById('link-url').value = link.url;
+                    document.getElementById('link-category').value = link.category;
+                    document.getElementById('link-platform').value = link.platform;
+                    document.getElementById('link-notes').value = link.notes || '';
+                    document.getElementById('link-summary').value = link.summary || '';
+                }
+            } else {
+                modalTitle.textContent = 'Add New Link';
+                submitBtn.textContent = 'Save Link';
+                document.getElementById('add-link-form').reset();
+                document.getElementById('link-id').value = '';
+                if (sharedUrl) {
+                    document.getElementById('link-url').value = sharedUrl;
+                    detectPlatform(sharedUrl);
+                }
+            }
+            
             document.getElementById('modal-overlay').classList.add('active');
             document.getElementById('link-url').focus();
         }
 
+        function detectPlatform(url) {
+            const platform = document.getElementById('link-platform');
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                platform.value = 'YouTube';
+            } else if (url.includes('tiktok.com')) {
+                platform.value = 'TikTok';
+            } else if (url.includes('instagram.com')) {
+                platform.value = 'Instagram';
+            } else if (url.includes('twitter.com') || url.includes('x.com')) {
+                platform.value = 'Twitter/X';
+            } else if (url.includes('github.com')) {
+                platform.value = 'GitHub';
+            }
+        }
+
         function closeModal() {
             document.getElementById('modal-overlay').classList.remove('active');
+            document.getElementById('share-banner').classList.remove('active');
             document.getElementById('add-link-form').reset();
+            editingId = null;
+            setTimeout(() => {
+                document.getElementById('modal-title').textContent = 'Add New Link';
+                document.getElementById('submit-btn').textContent = 'Save Link';
+            }, 300);
         }
 
         function closeModalOnOverlay(event) {
@@ -1091,22 +1288,74 @@
             const category = document.getElementById('link-category').value;
             const platform = document.getElementById('link-platform').value;
             const notes = document.getElementById('link-notes').value;
+            const summary = document.getElementById('link-summary').value;
 
-            const newLink = {
-                id: Date.now(),
-                url,
-                category,
-                platform,
-                notes,
-                date: new Date().toISOString(),
-                watched: false,
-                favorite: false
-            };
-
-            links.unshift(newLink);
-            saveLinks();
+            if (editingId) {
+                const link = links.find(l => l.id === editingId);
+                if (link) {
+                    link.url = url;
+                    link.category = category;
+                    link.platform = platform;
+                    link.notes = notes;
+                    link.summary = summary;
+                    saveLinks();
+                    showToast('Link Updated!');
+                }
+            } else {
+                const newLink = {
+                    id: Date.now(),
+                    url,
+                    category,
+                    platform,
+                    notes,
+                    summary,
+                    date: new Date().toISOString(),
+                    watched: false,
+                    favorite: false
+                };
+                links.unshift(newLink);
+                saveLinks();
+                showToast('Link Saved!');
+            }
+            
             closeModal();
-            showToast('Link Saved!');
+        }
+
+        // Summary Modal
+        function openSummaryModal(id) {
+            const link = links.find(l => l.id === id);
+            if (!link) return;
+            
+            document.getElementById('summary-link-id').value = id;
+            document.getElementById('summary-link-title').textContent = extractTitle(link.url);
+            document.getElementById('edit-summary-text').value = link.summary || '';
+            document.getElementById('summary-modal-overlay').classList.add('active');
+        }
+
+        function closeSummaryModal() {
+            document.getElementById('summary-modal-overlay').classList.remove('active');
+        }
+
+        function closeSummaryModalOnOverlay(event) {
+            if (event.target === event.currentTarget) {
+                closeSummaryModal();
+            }
+        }
+
+        function saveSummary(event) {
+            event.preventDefault();
+            
+            const id = parseInt(document.getElementById('summary-link-id').value);
+            const summary = document.getElementById('edit-summary-text').value;
+            
+            const link = links.find(l => l.id === id);
+            if (link) {
+                link.summary = summary;
+                saveLinks();
+                showToast(summary ? 'Summary Saved!' : 'Summary Cleared');
+            }
+            
+            closeSummaryModal();
         }
 
         // Render Links
@@ -1148,9 +1397,13 @@
                         </div>
                         <div class="link-title" onclick="window.open('${link.url}', '_blank')">${extractTitle(link.url)}</div>
                         ${link.notes ? `<div class="link-notes">${link.notes}</div>` : ''}
+                        ${link.summary ? `<div class="summary-preview">${link.summary}</div>` : ''}
                         <div class="card-actions">
                             <button class="watch-btn ${link.watched ? 'watched' : ''}" onclick="markWatched(${link.id})">
                                 ${link.watched ? '✓ Watched' : 'Mark as Watched'}
+                            </button>
+                            <button class="summary-btn ${link.summary ? 'has-summary' : ''}" onclick="openSummaryModal(${link.id})" title="${link.summary ? 'Edit Summary' : 'Add Summary'}">
+                                📝
                             </button>
                             <button class="delete-btn" onclick="deleteLink(${link.id})">
                                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
