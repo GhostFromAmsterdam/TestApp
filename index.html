@@ -965,6 +965,17 @@
             font-size: 13px;
             color: var(--text-secondary);
         }
+
+        /* Confetti Canvas */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
     </style>
 </head>
 <body>
@@ -1509,29 +1520,37 @@ What did you learn? What are the key insights?" required></textarea>
         function triggerConfetti() {
             const canvas = document.getElementById('confetti-canvas');
             const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            
+            // Set canvas to full viewport size
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = window.innerWidth * dpr;
+            canvas.height = window.innerHeight * dpr;
+            canvas.style.width = window.innerWidth + 'px';
+            canvas.style.height = window.innerHeight + 'px';
+            ctx.scale(dpr, dpr);
 
             const particles = [];
             const colors = ['#00F0FF', '#00FF88', '#FF00FF', '#FFD700', '#FF3366'];
+            
+            // Get click position or use center of screen
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
 
-            for (let i = 0; i < 120; i++) {
+            for (let i = 0; i < 100; i++) {
                 particles.push({
-                    x: canvas.width / 2,
-                    y: canvas.height / 2,
-                    vx: (Math.random() - 0.5) * 20,
-                    vy: (Math.random() - 0.5) * 20 - 8,
+                    x: centerX,
+                    y: centerY,
+                    vx: (Math.random() - 0.5) * 15,
+                    vy: (Math.random() - 0.5) * 15 - 5,
                     color: colors[Math.floor(Math.random() * colors.length)],
-                    size: Math.random() * 6 + 3,
+                    size: Math.random() * 8 + 4,
                     life: 1,
-                    decay: 0.012 + Math.random() * 0.008,
-                    rotation: Math.random() * Math.PI * 2,
-                    rotationSpeed: (Math.random() - 0.5) * 0.2
+                    decay: 0.015 + Math.random() * 0.01
                 });
             }
 
             function animate() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
                 let active = false;
 
                 particles.forEach(p => {
@@ -1539,26 +1558,21 @@ What did you learn? What are the key insights?" required></textarea>
                         active = true;
                         p.x += p.vx;
                         p.y += p.vy;
-                        p.vy += 0.25;
-                        p.rotation += p.rotationSpeed;
+                        p.vy += 0.3;
                         p.life -= p.decay;
 
-                        ctx.save();
                         ctx.globalAlpha = p.life;
-                        ctx.translate(p.x, p.y);
-                        ctx.rotate(p.rotation);
                         ctx.fillStyle = p.color;
-                        ctx.shadowBlur = 10;
+                        ctx.shadowBlur = 15;
                         ctx.shadowColor = p.color;
-                        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
-                        ctx.restore();
+                        ctx.fillRect(p.x - p.size/2, p.y - p.size/2, p.size, p.size);
                     }
                 });
 
                 if (active) {
                     requestAnimationFrame(animate);
                 } else {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
                 }
             }
 
@@ -1568,8 +1582,11 @@ What did you learn? What are the key insights?" required></textarea>
         // Handle window resize for canvas
         window.addEventListener('resize', () => {
             const canvas = document.getElementById('confetti-canvas');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = window.innerWidth * dpr;
+            canvas.height = window.innerHeight * dpr;
+            canvas.style.width = window.innerWidth + 'px';
+            canvas.style.height = window.innerHeight + 'px';
         });
     </script>
 </body>
