@@ -1520,22 +1520,16 @@ What did you learn? What are the key insights?" required></textarea>
         function triggerConfetti() {
             const canvas = document.getElementById('confetti-canvas');
             const ctx = canvas.getContext('2d');
-            
-            // High DPI canvas for sharp rendering
-            const dpr = window.devicePixelRatio || 1;
-            canvas.width = window.innerWidth * dpr;
-            canvas.height = window.innerHeight * dpr;
-            canvas.style.width = window.innerWidth + 'px';
-            canvas.style.height = window.innerHeight + 'px';
-            ctx.scale(dpr, dpr);
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
 
             const particles = [];
-            const colors = ['#00F0FF', '#00FF88', '#FF00FF', '#FFD700', '#FF3366'];
+            const colors = ['#2DE1FC', '#00FF94', '#B026FF', '#FFE600', '#FF0099'];
 
             for (let i = 0; i < 100; i++) {
                 particles.push({
-                    x: window.innerWidth / 2,
-                    y: window.innerHeight / 2,
+                    x: canvas.width / 2,
+                    y: canvas.height / 2,
                     vx: (Math.random() - 0.5) * 15,
                     vy: (Math.random() - 0.5) * 15 - 5,
                     color: colors[Math.floor(Math.random() * colors.length)],
@@ -1546,7 +1540,7 @@ What did you learn? What are the key insights?" required></textarea>
             }
 
             function animate() {
-                ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
                 let active = false;
 
                 particles.forEach(p => {
@@ -1559,16 +1553,14 @@ What did you learn? What are the key insights?" required></textarea>
 
                         ctx.globalAlpha = p.life;
                         ctx.fillStyle = p.color;
-                        ctx.shadowBlur = 15;
-                        ctx.shadowColor = p.color;
-                        ctx.fillRect(p.x - p.size/2, p.y - p.size/2, p.size, p.size);
+                        ctx.fillRect(p.x, p.y, p.size, p.size);
                     }
                 });
 
                 if (active) {
                     requestAnimationFrame(animate);
                 } else {
-                    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
                 }
             }
 
@@ -1578,11 +1570,8 @@ What did you learn? What are the key insights?" required></textarea>
         // Handle window resize for canvas
         window.addEventListener('resize', () => {
             const canvas = document.getElementById('confetti-canvas');
-            const dpr = window.devicePixelRatio || 1;
-            canvas.width = window.innerWidth * dpr;
-            canvas.height = window.innerHeight * dpr;
-            canvas.style.width = window.innerWidth + 'px';
-            canvas.style.height = window.innerHeight + 'px';
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
         });
     </script>
 </body>
