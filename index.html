@@ -155,7 +155,7 @@
         
         .dashboard {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            grid-template-columns: 1fr;
             gap: 12px;
             margin-bottom: 24px;
         }
@@ -167,10 +167,8 @@
             border: 1px solid var(--border-subtle);
             border-radius: 16px;
             padding: 16px;
-            min-height: 100px;
             position: relative;
             overflow: hidden;
-            grid-column: span 1;
         }
 
         .widget-label {
@@ -180,7 +178,6 @@
             color: var(--text-secondary);
         }
         
-        .widget-badges { grid-column: span 2; }
         .achievement-badges { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
         .badge {
             display: inline-flex;
@@ -195,22 +192,6 @@
             box-shadow: 0 0 15px #00ff8833;
         }
         
-        .widget-heatmap { grid-column: span 4; }
-        .heatmap {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            grid-template-rows: repeat(4, 1fr);
-            gap: 4px;
-            margin-top: 10px;
-        }
-        .heatmap-cell {
-            width: 100%;
-            padding-bottom: 100%;
-            background: #ffffff0d;
-            border-radius: 2px;
-        }
-        .heatmap-cell.active { background: var(--neon-green); }
-
         .filter-bar {
             display: flex;
             gap: 10px;
@@ -241,6 +222,7 @@
         .filter-pill[data-category="Vibecoding"].active { color: var(--neon-pink); border-color: var(--neon-pink); }
         .filter-pill[data-category="Classified"].active { color: var(--danger); border-color: var(--danger); }
 
+        /* --- CRITICAL LAYOUT FIX --- */
         .content-feed {
             display: flex;
             flex-direction: column;
@@ -283,10 +265,10 @@
             background-position: center;
         }
 
-        .card-content { flex: 1; padding: 14px 16px; }
+        .card-content { flex: 1; padding: 14px 16px; overflow: hidden; }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .platform-badge { font-size: 10px; text-transform: uppercase; color: var(--text-secondary); }
-        .link-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; cursor: pointer; }
+        .link-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .link-notes { font-size: 13px; color: var(--text-secondary); line-height: 1.4; }
         .card-actions { display: flex; gap: 8px; margin-top: 12px; }
         .action-btn {
@@ -328,7 +310,7 @@
             background: #00f0ff08; color: var(--text-primary);
             font-size: 15px; font-family: 'JetBrains Mono', monospace;
         }
-        .form-checkbox { margin-top: 16px; display: flex; align-items: center; gap: 10px; }
+        .form-checkbox { margin-top: 16px; display: flex; align-items: center; gap: 10px; user-select: none; }
 
         .submit-btn {
             width: 100%; padding: 18px; border-radius: 12px; border: 1px solid var(--neon-cyan);
@@ -337,7 +319,7 @@
             transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 3px; margin-top: 8px;
         }
 
-        .toast-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 300; }
+        .toast-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 10000; }
         .toast {
             background: #0a0c14F8; backdrop-filter: blur(20px);
             border: 1px solid var(--border-glow); border-radius: 10px; padding: 14px 28px;
@@ -355,45 +337,24 @@
             align-items: center; justify-content: center;
             color: var(--neon-green);
             flex-direction: column; text-align: center;
-            transition: opacity 0.5s ease; /* CRITICAL FIX */
+            transition: opacity 0.5s ease;
         }
-        #boot-log { font-size: 12px; width: 80%; height: 200px; overflow: hidden; }
+        #boot-log { font-size: 12px; width: 80%; max-width: 400px; height: 200px; overflow: hidden; }
         #boot-log p { margin: 0; }
-        #biometric-scan { display: none; }
-        #biometric-grid {
-            width: 150px; height: 150px;
-            background:
-                linear-gradient(var(--neon-green) 2px, transparent 2px),
-                linear-gradient(90deg, var(--neon-green) 2px, transparent 2px);
-            background-size: 30px 30px;
-            animation: scan 1s linear; /* Shortened to 1s */
-        }
-        @keyframes scan {
-            from { mask: linear-gradient(to bottom, #000 0%, transparent 100%); }
-            to { mask: linear-gradient(to bottom, #000 100%, transparent 100%); }
-        }
 
         .glitch { animation: glitch-anim 0.3s both; }
         @keyframes glitch-anim {
-            0% { transform: translate(0); }
-            20% { transform: translate(-3px, 3px); }
-            40% { transform: translate(-3px, -3px); }
-            60% { transform: translate(3px, 3px); }
-            80% { transform: translate(3px, -3px); }
-            to { transform: translate(0); }
+            0% { transform: translate(0); } 20% { transform: translate(-3px, 3px); }
+            40% { transform: translate(-3px, -3px); } 60% { transform: translate(3px, 3px); }
+            80% { transform: translate(3px, -3px); } to { transform: translate(0); }
         }
         
         .binary-scramble { display: inline-block; }
-
     </style>
 </head>
 <body class="">
     <div id="intro-overlay">
         <div id="boot-log"></div>
-        <div id="biometric-scan">
-            <div id="biometric-grid"></div>
-            <p style="margin-top: 15px;">AUTHENTICATING...</p>
-        </div>
     </div>
     
     <div class="background-grid"></div>
@@ -408,11 +369,7 @@
 
     <div class="container" style="transition: transform 0.1s ease-out;">
         <div class="dashboard">
-            <div class="widget widget-heatmap">
-                <span class="widget-label">NEURAL ACTIVITY</span>
-                <div class="heatmap" id="heatmap"></div>
-            </div>
-             <div class="widget widget-badges">
+             <div class="widget">
                 <span class="widget-label">ACHIEVEMENTS</span>
                 <div class="achievement-badges" id="achievement-badges"></div>
             </div>
@@ -491,13 +448,17 @@
         runIntroSequence();
         setupEventListeners();
         loadData();
-        renderHeatmap();
     });
 
     function loadData() {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
-            links = JSON.parse(stored);
+            try {
+                links = JSON.parse(stored);
+            } catch {
+                links = [];
+                localStorage.removeItem(STORAGE_KEY);
+            }
         }
         // Self-destruct check
         const now = Date.now();
@@ -510,7 +471,7 @@
         if (links.length < initialCount) {
             showToast(`${initialCount - links.length} link(s) self-destructed.`);
         }
-        saveData();
+        saveData(); // This also triggers the first render
     }
 
     function saveData() {
@@ -529,12 +490,12 @@
         }
         
         feed.innerHTML = filtered.length === 0
-            ? `<p style="text-align:center; color: var(--text-secondary);">// NO DATAPOINTS FOUND //</p>`
+            ? `<p style="text-align:center; color: var(--text-secondary); padding: 40px 0;">// NO DATAPOINTS FOUND //</p>`
             : filtered.map(createLinkCardHTML).join('');
     }
 
     function createLinkCardHTML(link) {
-        const title = link.url.split('/')[2].replace('www.','') || 'Link';
+        const title = link.url.split('/')[2]?.replace('www.','') || 'Link';
         const isYouTube = link.platform === 'YouTube';
         const ytId = isYouTube ? getYouTubeID(link.url) : null;
         const thumbnailStyle = ytId ? `background-image: url('https://img.youtube.com/vi/${ytId}/hqdefault.jpg')` : '';
@@ -558,25 +519,14 @@
     }
     
     function updateDashboard() {
-        $('#achievement-badges').innerHTML = '';
+        const badgeContainer = $('#achievement-badges');
+        badgeContainer.innerHTML = '';
         if (links.length > 50) {
-            $('#achievement-badges').innerHTML += `<div class="badge">🏆 Info Broker</div>`;
+            badgeContainer.innerHTML += `<div class="badge">🏆 Info Broker</div>`;
         }
         if (links.length > 10) {
-             $('#achievement-badges').innerHTML += `<div class="badge">💾 Data Hoarder</div>`;
+             badgeContainer.innerHTML += `<div class="badge">💾 Data Hoarder</div>`;
         }
-    }
-
-    function renderHeatmap() {
-        const heatmap = $('#heatmap');
-        let cells = '';
-        for (let i = 0; i < 28; i++) {
-            cells += `<div class="heatmap-cell ${Math.random() > 0.7 ? 'active' : ''}"></div>`;
-        }
-        heatmap.innerHTML = cells;
-        setInterval(() => {
-            $$('#heatmap .heatmap-cell').forEach(cell => cell.classList.toggle('active', Math.random() > 0.7));
-        }, 2000);
     }
 
     // --- EVENT LISTENERS ---
@@ -600,35 +550,31 @@
     }
     
     // --- FEATURES ---
-
     function runIntroSequence() {
         const overlay = $('#intro-overlay');
         const bootLog = $('#boot-log');
         const lines = [
             '> INIT KERNEL...', '> LOADING CORE MODULES...', '> DECRYPTING NEURAL_OS V2.7...',
-            '> ESTABLISHING CORTEX CONNECTION...', '> ROOT ACCESS GRANTED. WELCOME, OPERATOR.', '>',
+            '> ESTABLISHING CORTEX CONNECTION...', '> ROOT ACCESS GRANTED. WELCOME, OPERATOR.',
         ];
         let i = 0;
-        const interval = setInterval(() => {
+        const bootInterval = setInterval(() => {
             if (i < lines.length) {
                 bootLog.innerHTML += `<p>${lines[i++]}</p>`;
                 bootLog.scrollTop = bootLog.scrollHeight;
             } else {
-                clearInterval(interval);
+                clearInterval(bootInterval);
                 setTimeout(() => {
-                    $('#boot-log').style.display = 'none';
-                    $('#biometric-scan').style.display = 'block';
-                    setTimeout(() => {
-                        overlay.style.opacity = '0';
-                        overlay.addEventListener('transitionend', () => {
-                            overlay.style.pointerEvents = 'none'; // CRITICAL FIX
-                            overlay.style.zIndex = '-1';          // CRITICAL FIX
-                        }, { once: true });
-                        scrambleText();
-                    }, 1000); // Biometric scan duration
-                }, 500);
+                    overlay.style.opacity = '0';
+                    // CRITICAL FIX: After transition, disable pointer events and hide.
+                    overlay.addEventListener('transitionend', () => {
+                        overlay.style.pointerEvents = 'none';
+                        overlay.style.zIndex = '-1';
+                    }, { once: true });
+                    scrambleText();
+                }, 200);
             }
-        }, 250); // Boot log speed (1.5s total)
+        }, 250); // Total boot time ~1.5s
     }
 
     function handleFormSubmit(e) {
@@ -663,7 +609,9 @@
     
     function toggleModal(show) {
         $('#modal-overlay').classList.toggle('active', show);
-        if (!show) $('#add-link-form').reset();
+        if (show) {
+            $('#add-link-form').reset();
+        }
     }
     
     function toggleGhostMode() {
@@ -700,7 +648,7 @@
     }
     
     function shareLink(id) {
-        const fakeEncrypted = `BRAINVAULT://SECURE/${btoa(id).slice(0, 10)}`;
+        const fakeEncrypted = `BRAINVAULT://SECURE/${btoa(String(id)).slice(0, 10)}`;
         navigator.clipboard.writeText(fakeEncrypted)
             .then(() => showToast('ENCRYPTED LINK COPIED'))
             .catch(() => showToast('COPY FAILED'));
